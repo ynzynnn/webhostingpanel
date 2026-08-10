@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientDashboardController;
 use App\Http\Controllers\DatabaseController;
 use App\Http\Controllers\DomainController;
+use App\Http\Controllers\FileController;
 use App\Http\Controllers\WebsiteController;
 use App\Http\Middleware\EnsureRole;
 use App\Models\AuditLog;
@@ -55,17 +56,23 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/databases', [DatabaseController::class, 'store'])->name('databases.store');
     Route::delete('/databases/{database}', [DatabaseController::class, 'destroy'])->name('databases.destroy');
 
+    // File Manager Shared Actions
+    Route::get('/files', [FileController::class, 'index'])->name('files.index');
+    Route::post('/files/create-file', [FileController::class, 'createFile'])->name('files.create-file');
+    Route::post('/files/create-folder', [FileController::class, 'createFolder'])->name('files.create-folder');
+    Route::post('/files/upload', [FileController::class, 'upload'])->name('files.upload');
+    Route::post('/files/get-content', [FileController::class, 'getContent'])->name('files.get-content');
+    Route::post('/files/save-content', [FileController::class, 'saveContent'])->name('files.save-content');
+    Route::delete('/files/delete', [FileController::class, 'destroy'])->name('files.destroy');
+    Route::post('/files/extract-zip', [FileController::class, 'extractZip'])->name('files.extract-zip');
+
     // Admin Group
     Route::middleware([EnsureRole::class . ':admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::get('/websites', [WebsiteController::class, 'index'])->name('websites');
         Route::get('/domains', [DomainController::class, 'index'])->name('domains');
         Route::get('/databases', [DatabaseController::class, 'index'])->name('databases');
-        
-        Route::get('/files', function () {
-            $websites = Website::with('user')->latest()->get();
-            return view('files.index', compact('websites'));
-        })->name('files');
+        Route::get('/files', [FileController::class, 'index'])->name('files');
 
         Route::get('/ssl', function () {
             $sslCertificates = SslCertificate::with(['website', 'user'])->latest()->get();
@@ -91,11 +98,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/websites', [WebsiteController::class, 'index'])->name('websites');
         Route::get('/domains', [DomainController::class, 'index'])->name('domains');
         Route::get('/databases', [DatabaseController::class, 'index'])->name('databases');
-
-        Route::get('/files', function () {
-            $websites = Website::where('user_id', auth()->id())->latest()->get();
-            return view('files.index', compact('websites'));
-        })->name('files');
+        Route::get('/files', [FileController::class, 'index'])->name('files');
 
         Route::get('/ssl', function () {
             $sslCertificates = SslCertificate::where('user_id', auth()->id())->latest()->get();
