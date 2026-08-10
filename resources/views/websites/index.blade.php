@@ -23,10 +23,13 @@
     <!-- Website Table Card -->
     <div class="card-box overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs text-slate-700">
-                <thead class="bg-slate-100/70 text-[11px] font-bold text-slate-500 uppercase font-mono tracking-wider border-b border-slate-200">
+            <table class="w-full text-left text-xs text-slate-700 border-collapse">
+                <thead class="bg-slate-50/80 text-[11px] font-bold text-slate-600 uppercase font-mono tracking-wider border-b border-slate-200">
                     <tr>
                         <th class="px-5 py-3.5">Domain Website</th>
+                        @if(auth()->user()->isAdmin())
+                            <th class="px-5 py-3.5">Pemilik (Client)</th>
+                        @endif
                         <th class="px-5 py-3.5">Linux User</th>
                         <th class="px-5 py-3.5">Document Root</th>
                         <th class="px-5 py-3.5">PHP Version</th>
@@ -35,21 +38,26 @@
                         <th class="px-5 py-3.5 text-right">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
+                <tbody class="divide-y divide-slate-100 font-mono">
                     @forelse($websites as $website)
                         <tr class="hover:bg-slate-50/80 transition-colors">
                             <td class="px-5 py-4">
-                                <a href="{{ route('websites.show', $website) }}" class="font-bold text-slate-900 hover:text-brand-600 font-mono transition-colors">
+                                <a href="{{ route('websites.show', $website) }}" class="font-bold text-slate-900 hover:text-brand-600 transition-colors">
                                     {{ $website->domain_name }}
                                 </a>
                             </td>
-                            <td class="px-5 py-4 font-mono text-slate-600">
+                            @if(auth()->user()->isAdmin())
+                                <td class="px-5 py-4 text-slate-700 font-sans font-semibold">
+                                    {{ $website->user ? $website->user->name : '-' }}
+                                </td>
+                            @endif
+                            <td class="px-5 py-4 text-slate-600">
                                 {{ $website->system_user }}
                             </td>
-                            <td class="px-5 py-4 font-mono text-slate-500 text-[11px]">
+                            <td class="px-5 py-4 text-slate-500 text-[11px]">
                                 {{ $website->document_root }}
                             </td>
-                            <td class="px-5 py-4 font-mono text-slate-800">
+                            <td class="px-5 py-4 text-slate-800">
                                 <span class="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-[11px]">PHP {{ $website->php_version }}</span>
                             </td>
                             <td class="px-5 py-4">
@@ -80,7 +88,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-5 py-8 text-center text-slate-400 font-mono">
+                            <td colspan="{{ auth()->user()->isAdmin() ? 8 : 7 }}" class="px-5 py-8 text-center text-slate-400 font-mono">
                                 Belum ada website yang terdaftar. Klik "+ Tambah Website Baru" untuk membuat website pertama.
                             </td>
                         </tr>

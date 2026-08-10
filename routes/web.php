@@ -4,6 +4,7 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientDashboardController;
+use App\Http\Controllers\DatabaseController;
 use App\Http\Controllers\DomainController;
 use App\Http\Controllers\WebsiteController;
 use App\Http\Middleware\EnsureRole;
@@ -49,16 +50,23 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/domains/{domain}/check-dns', [DomainController::class, 'checkDns'])->name('domains.check-dns');
     Route::delete('/domains/{domain}', [DomainController::class, 'destroy'])->name('domains.destroy');
 
+    // Database Management Shared Actions
+    Route::get('/databases', [DatabaseController::class, 'index'])->name('databases.index');
+    Route::post('/databases', [DatabaseController::class, 'store'])->name('databases.store');
+    Route::delete('/databases/{database}', [DatabaseController::class, 'destroy'])->name('databases.destroy');
+
     // Admin Group
     Route::middleware([EnsureRole::class . ':admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::get('/websites', [WebsiteController::class, 'index'])->name('websites');
         Route::get('/domains', [DomainController::class, 'index'])->name('domains');
+        Route::get('/databases', [DatabaseController::class, 'index'])->name('databases');
 
         Route::get('/clients', function () {
             $clients = User::where('role', 'client')->latest()->get();
             return view('clients.index', compact('clients'));
         })->name('clients');
+        Route::post('/clients', [AdminDashboardController::class, 'storeClient'])->name('clients.store');
 
         Route::get('/audit-logs', function () {
             $auditLogs = AuditLog::with('user')->latest()->paginate(20);
@@ -71,11 +79,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', [ClientDashboardController::class, 'index'])->name('dashboard');
         Route::get('/websites', [WebsiteController::class, 'index'])->name('websites');
         Route::get('/domains', [DomainController::class, 'index'])->name('domains');
-
-        Route::get('/databases', function () {
-            $databases = DatabaseModel::where('user_id', auth()->id())->latest()->get();
-            return view('databases.index', compact('databases'));
-        })->name('databases');
+        Route::get('/databases', [DatabaseController::class, 'index'])->name('databases');
 
         Route::get('/files', function () {
             $websites = Website::where('user_id', auth()->id())->latest()->get();

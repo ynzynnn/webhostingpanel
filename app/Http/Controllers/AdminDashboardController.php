@@ -37,19 +37,31 @@ class AdminDashboardController extends Controller
 
     public function websites(): View
     {
-        $websites = Website::with('user')->latest()->paginate(15);
-        return view('placeholder', ['title' => 'Websites Management (Admin)', 'item' => $websites]);
+        $websites = Website::with('user')->latest()->get();
+        return view('websites.index', compact('websites'));
     }
 
-    public function clients(): View
+    public function storeClient(\Illuminate\Http\Request $request)
     {
-        $clients = User::where('role', 'client')->latest()->paginate(15);
-        return view('placeholder', ['title' => 'Clients Management', 'item' => $clients]);
-    }
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8',
+            'disk_quota_mb' => 'required|integer|min:100',
+        ]);
 
-    public function auditLogs(): View
-    {
-        $logs = AuditLog::with('user')->latest()->paginate(20);
-        return view('placeholder', ['title' => 'System Audit Logs', 'item' => $logs]);
+        $client = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => \Hash::make($request->password),
+            'role' => 'client',
+            'status' => 'active',
+            'disk_quota_mb' => $request->disk_quota_mb,
+            'disk_used_mb' => 0,
+        ]);
+
+        \App\Services\AuditLogger::log('client_created', "Akun client baru {$client->email} (Quota: {$client->disk_quota_mb}MB) berhasil dibuat.", auth()->id());
+
+        return redirect()->back()->with('success', "Akun client {$client->email} berhasil dibuat!");
     }
 }
