@@ -104,18 +104,16 @@ class WebsiteProvisioningService
             $createdResources['db_domain_id'] = $domain->id;
 
             // Step 2: Create Linux Directories & Sample Index Page
+            if (! File::isDirectory($baseDir)) {
+                File::makeDirectory($baseDir, 0755, true, true);
+            }
             if (! File::isDirectory($documentRoot)) {
-                if (! @File::makeDirectory($documentRoot, 0755, true, true)) {
-                    // Fallback to storage path if system folder is not writable
-                    $fallbackBase = storage_path("app/vhosts/{$systemUser}");
-                    $documentRoot = "{$fallbackBase}/public_html";
-                    $logsDir = "{$fallbackBase}/logs";
-                    File::makeDirectory($documentRoot, 0755, true, true);
-                    $baseDir = $fallbackBase;
-                }
+                File::makeDirectory($documentRoot, 0755, true, true);
+            }
+            if (! File::isDirectory($logsDir)) {
+                File::makeDirectory($logsDir, 0755, true, true);
             }
 
-            File::makeDirectory($logsDir, 0755, true, true);
             File::makeDirectory(dirname($nginxConfigPath), 0755, true, true);
             File::makeDirectory(dirname($fpmConfigPath), 0755, true, true);
 
