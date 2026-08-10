@@ -14,8 +14,13 @@ return new class extends Migration
         Schema::create('databases', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('db_name')->unique();
-            $table->string('db_user');
+            $table->foreignId('website_id')->nullable()->constrained()->onDelete('set null');
+            $table->string('name')->unique()->nullable();
+            $table->string('username')->nullable();
+            $table->string('host')->default('127.0.0.1');
+            $table->integer('port')->default(3306);
+            $table->string('db_name')->nullable();
+            $table->string('db_user')->nullable();
             $table->timestamps();
         });
     }
