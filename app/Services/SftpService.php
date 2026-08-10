@@ -68,21 +68,24 @@ class SftpService
     public function ensureSshdConfig(): void
     {
         if (PHP_OS_FAMILY === 'Linux') {
-            $confPath = "/etc/ssh/sshd_config.d/septapanel.conf";
-            $sshdContent = "# SeptaPanel OpenSSH SFTP Configuration\nMatch Group www-data\n    PasswordAuthentication yes\n";
+            // 99-septapanel.conf ensures it is loaded LAST after 50-cloud-init.conf or 60-cloudimg-settings.conf
+            $confPath = "/etc/ssh/sshd_config.d/99-septapanel.conf";
+            $sshdContent = "# SeptaPanel OpenSSH SFTP Configuration\nPasswordAuthentication yes\nKbdInteractiveAuthentication yes\nUsePAM yes\n";
 
-            $tmpConf = "/tmp/sftp_sshd.conf";
+            $tmpConf = "/tmp/99_septapanel_sshd.conf";
             @file_put_contents($tmpConf, $sshdContent);
 
             if (File::isDirectory('/etc/ssh/sshd_config.d')) {
                 @shell_exec("sudo /bin/cp " . escapeshellarg($tmpConf) . " " . escapeshellarg($confPath) . " 2>&1");
+                @shell_exec("sudo /bin/chmod 644 " . escapeshellarg($confPath) . " 2>&1");
             }
 
-            // Also ensure global PasswordAuthentication yes if disabled
-            @shell_exec("sudo /bin/sed -i 's/^PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config 2>&1");
+            // Replace PasswordAuthentication no -> yes in main config & all cloud-init subfiles
+            @shell_exec("sudo /bin/sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config /etc/ssh/sshd_config.d/*.conf 2>&1");
+            @shell_exec("sudo /bin/sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/g' /etc/ssh/sshd_config /etc/ssh/sshd_config.d/*.conf 2>&1");
 
-            // Reload SSH service
-            @shell_exec("sudo /usr/bin/systemctl reload ssh || sudo /usr/bin/systemctl reload sshd 2>&1");
+            // Restart SSH service
+            @shell_exec("sudo /usr/bin/systemctl restart ssh || sudo /usr/bin/systemctl restart sshd 2>&1");
             @unlink($tmpConf);
         }
     }
