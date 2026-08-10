@@ -159,7 +159,7 @@
         </a>
 
         <!-- Custom Domains -->
-        <a href="{{ route('client.domains') }}" class="card-box card-box-hover p-5 block group">
+        <a href="{{ route('admin.domains') }}" class="card-box card-box-hover p-5 block group">
             <div class="flex items-center justify-between">
                 <span class="text-xs font-bold text-slate-500 uppercase tracking-wider font-mono">Domain</span>
                 <div class="w-8 h-8 rounded-lg bg-slate-100 group-hover:bg-brand-50 group-hover:text-brand-600 text-slate-500 flex items-center justify-center transition-colors">
@@ -173,7 +173,7 @@
         </a>
 
         <!-- MariaDB Databases -->
-        <a href="{{ route('client.databases') }}" class="card-box card-box-hover p-5 block group">
+        <a href="{{ route('admin.databases') }}" class="card-box card-box-hover p-5 block group">
             <div class="flex items-center justify-between">
                 <span class="text-xs font-bold text-slate-500 uppercase tracking-wider font-mono">Database</span>
                 <div class="w-8 h-8 rounded-lg bg-slate-100 group-hover:bg-brand-50 group-hover:text-brand-600 text-slate-500 flex items-center justify-center transition-colors">

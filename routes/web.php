@@ -61,6 +61,16 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/websites', [WebsiteController::class, 'index'])->name('websites');
         Route::get('/domains', [DomainController::class, 'index'])->name('domains');
         Route::get('/databases', [DatabaseController::class, 'index'])->name('databases');
+        
+        Route::get('/files', function () {
+            $websites = Website::with('user')->latest()->get();
+            return view('files.index', compact('websites'));
+        })->name('files');
+
+        Route::get('/ssl', function () {
+            $sslCertificates = SslCertificate::with(['website', 'user'])->latest()->get();
+            return view('ssl.index', compact('sslCertificates'));
+        })->name('ssl');
 
         Route::get('/clients', function () {
             $clients = User::where('role', 'client')->latest()->get();

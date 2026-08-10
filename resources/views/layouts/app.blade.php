@@ -131,21 +131,21 @@
                     </a>
 
                     <!-- Databases -->
-                    <a href="{{ route('client.databases') }}" 
+                    <a href="{{ $isAdmin ? route('admin.databases') : route('client.databases') }}" 
                        class="flex items-center space-x-3 px-3.5 py-2.5 rounded-lg font-semibold transition-all {{ str_contains($currentRoute, 'databases') ? 'bg-brand-50 text-brand-600 border border-brand-100' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
                         <svg class="w-4 h-4 {{ str_contains($currentRoute, 'databases') ? 'text-brand-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
                         <span>Databases</span>
                     </a>
 
                     <!-- File Manager -->
-                    <a href="{{ route('client.files') }}" 
+                    <a href="{{ $isAdmin ? route('admin.files') : route('client.files') }}" 
                        class="flex items-center space-x-3 px-3.5 py-2.5 rounded-lg font-semibold transition-all {{ str_contains($currentRoute, 'files') ? 'bg-brand-50 text-brand-600 border border-brand-100' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
                         <svg class="w-4 h-4 {{ str_contains($currentRoute, 'files') ? 'text-brand-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
                         <span>File Manager</span>
                     </a>
 
                     <!-- SSL Certificates -->
-                    <a href="{{ route('client.ssl') }}" 
+                    <a href="{{ $isAdmin ? route('admin.ssl') : route('client.ssl') }}" 
                        class="flex items-center space-x-3 px-3.5 py-2.5 rounded-lg font-semibold transition-all {{ str_contains($currentRoute, 'ssl') ? 'bg-brand-50 text-brand-600 border border-brand-100' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
                         <svg class="w-4 h-4 {{ str_contains($currentRoute, 'ssl') ? 'text-brand-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                         <span>SSL Certificates</span>
