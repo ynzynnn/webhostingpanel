@@ -48,6 +48,7 @@ class AdminDashboardController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
             'disk_quota_mb' => 'required|integer|min:100',
+            'max_websites' => 'required|integer|min:1|max:100',
         ]);
 
         $client = User::create([
@@ -58,10 +59,28 @@ class AdminDashboardController extends Controller
             'status' => 'active',
             'disk_quota_mb' => $request->disk_quota_mb,
             'disk_used_mb' => 0,
+            'max_websites' => $request->max_websites,
         ]);
 
-        \App\Services\AuditLogger::log('client_created', "Akun client baru {$client->email} (Quota: {$client->disk_quota_mb}MB) berhasil dibuat.", auth()->id());
+        \App\Services\AuditLogger::log('client_created', "Akun client baru {$client->email} (Disk: {$client->disk_quota_mb}MB, Max Website: {$client->max_websites}) berhasil dibuat.", auth()->id());
 
         return redirect()->back()->with('success', "Akun client {$client->email} berhasil dibuat!");
+    }
+
+    public function updateClientQuota(\Illuminate\Http\Request $request, User $user)
+    {
+        $request->validate([
+            'disk_quota_mb' => 'required|integer|min:100',
+            'max_websites' => 'required|integer|min:1|max:100',
+        ]);
+
+        $user->update([
+            'disk_quota_mb' => $request->disk_quota_mb,
+            'max_websites' => $request->max_websites,
+        ]);
+
+        \App\Services\AuditLogger::log('client_quota_updated', "Quota client {$user->email} diperbarui (Disk: {$user->disk_quota_mb}MB, Max Website: {$user->max_websites}).", auth()->id());
+
+        return redirect()->back()->with('success', "Quota client {$user->email} berhasil diperbarui!");
     }
 }

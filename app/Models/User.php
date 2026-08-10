@@ -24,6 +24,7 @@ class User extends Authenticatable
         'status',
         'disk_quota_mb',
         'disk_used_mb',
+        'max_websites',
     ];
 
     /**
@@ -48,7 +49,18 @@ class User extends Authenticatable
             'password' => 'hashed',
             'disk_quota_mb' => 'integer',
             'disk_used_mb' => 'integer',
+            'max_websites' => 'integer',
         ];
+    }
+
+    public function hasReachedWebsiteQuota(): bool
+    {
+        if ($this->isAdmin()) {
+            return false;
+        }
+
+        $max = $this->max_websites ?? 5;
+        return $this->websites()->count() >= $max;
     }
 
     public function isAdmin(): bool

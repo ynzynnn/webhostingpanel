@@ -14,18 +14,40 @@
                 <p class="text-xs text-slate-500">Kelola website, domain custom, database, dan file Anda secara mandiri.</p>
             </div>
 
-            <!-- Disk Quota Storage Meter -->
-            <div class="w-full md:w-80 bg-white border border-slate-200 rounded-lg p-4 space-y-2 shadow-xs">
-                <div class="flex items-center justify-between text-xs font-mono font-bold">
-                    <span class="text-slate-500 uppercase tracking-wider">Kapasitas Disk</span>
-                    <span class="text-slate-900">{{ $diskUsedMb }} MB / {{ $diskQuotaMb }} MB</span>
+            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                <!-- Disk Quota Storage Meter -->
+                <div class="w-full md:w-64 bg-white border border-slate-200 rounded-lg p-3.5 space-y-2 shadow-xs">
+                    <div class="flex items-center justify-between text-xs font-mono font-bold">
+                        <span class="text-slate-500 uppercase tracking-wider text-[10px]">Storage Disk</span>
+                        <span class="text-slate-900">{{ $diskUsedMb }}/{{ $diskQuotaMb }} MB</span>
+                    </div>
+                    <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                        <div class="h-full bg-brand-600 rounded-full transition-all duration-500" style="width: {{ min(100, max(5, $diskPercent)) }}%"></div>
+                    </div>
+                    <div class="flex items-center justify-between text-[10px] text-slate-500 font-mono">
+                        <span>Terpakai: {{ $diskPercent }}%</span>
+                        <span>Sisa: {{ max(0, $diskQuotaMb - $diskUsedMb) }} MB</span>
+                    </div>
                 </div>
-                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
-                    <div class="h-full bg-brand-600 rounded-full transition-all duration-500" style="width: {{ min(100, max(5, $diskPercent)) }}%"></div>
-                </div>
-                <div class="flex items-center justify-between text-[10px] text-slate-500 font-mono">
-                    <span>Terpakai: {{ $diskPercent }}%</span>
-                    <span>Sisa: {{ max(0, $diskQuotaMb - $diskUsedMb) }} MB</span>
+
+                <!-- Website Quota Meter -->
+                @php
+                    $webCount = $websites->count();
+                    $maxWeb = $user->max_websites ?? 5;
+                    $webPercent = min(100, round(($webCount / max(1, $maxWeb)) * 100));
+                @endphp
+                <div class="w-full md:w-64 bg-white border border-slate-200 rounded-lg p-3.5 space-y-2 shadow-xs">
+                    <div class="flex items-center justify-between text-xs font-mono font-bold">
+                        <span class="text-slate-500 uppercase tracking-wider text-[10px]">Quota Website</span>
+                        <span class="text-slate-900">{{ $webCount }}/{{ $maxWeb }} Website</span>
+                    </div>
+                    <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                        <div class="h-full rounded-full transition-all duration-500 {{ $webPercent >= 100 ? 'bg-rose-500' : 'bg-emerald-500' }}" style="width: {{ min(100, max(5, $webPercent)) }}%"></div>
+                    </div>
+                    <div class="flex items-center justify-between text-[10px] text-slate-500 font-mono">
+                        <span>Terpakai: {{ $webPercent }}%</span>
+                        <span>Slot Sisa: {{ max(0, $maxWeb - $webCount) }}</span>
+                    </div>
                 </div>
             </div>
         </div>

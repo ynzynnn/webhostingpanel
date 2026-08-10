@@ -40,6 +40,12 @@ class WebsiteController extends Controller
         ]);
 
         $user = auth()->user();
+        
+        if ($user->hasReachedWebsiteQuota()) {
+            $max = $user->max_websites ?? 5;
+            return back()->withErrors(['domain_name' => "Gagal membuat website: Akun Anda telah mencapai batas kuota maksimum {$max} website."])->withInput();
+        }
+
         $enableAutoSsl = $request->boolean('auto_ssl', true);
 
         $result = $this->provisioningService->createWebsite(

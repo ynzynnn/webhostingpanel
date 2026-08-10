@@ -77,6 +77,7 @@ Route::middleware(['auth'])->group(function () {
             return view('clients.index', compact('clients'));
         })->name('clients');
         Route::post('/clients', [AdminDashboardController::class, 'storeClient'])->name('clients.store');
+        Route::put('/clients/{user}/quota', [AdminDashboardController::class, 'updateClientQuota'])->name('clients.quota');
 
         Route::get('/audit-logs', function () {
             $auditLogs = AuditLog::with('user')->latest()->paginate(20);
