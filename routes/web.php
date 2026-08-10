@@ -7,6 +7,7 @@ use App\Http\Controllers\ClientDashboardController;
 use App\Http\Controllers\DatabaseController;
 use App\Http\Controllers\DomainController;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\SftpController;
 use App\Http\Controllers\WebsiteController;
 use App\Http\Middleware\EnsureRole;
 use App\Models\AuditLog;
@@ -46,6 +47,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/websites/{website}/fix-permissions', [WebsiteController::class, 'fixPermissions'])->name('websites.fix-permissions');
     Route::delete('/websites/{website}', [WebsiteController::class, 'destroy'])->name('websites.destroy');
 
+    // SFTP Management Shared Actions
+    Route::get('/sftp', [SftpController::class, 'index'])->name('sftp.index');
+    Route::post('/websites/{website}/sftp/reset-password', [SftpController::class, 'resetPassword'])->name('sftp.reset-password');
+
     // Domain Management Shared Actions
     Route::get('/domains', [DomainController::class, 'index'])->name('domains.index');
     Route::post('/domains', [DomainController::class, 'store'])->name('domains.store');
@@ -74,6 +79,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/domains', [DomainController::class, 'index'])->name('domains');
         Route::get('/databases', [DatabaseController::class, 'index'])->name('databases');
         Route::get('/files', [FileController::class, 'index'])->name('files');
+        Route::get('/sftp', [SftpController::class, 'index'])->name('sftp');
 
         Route::get('/ssl', function () {
             $sslCertificates = SslCertificate::with(['website', 'user'])->latest()->get();
@@ -100,6 +106,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/domains', [DomainController::class, 'index'])->name('domains');
         Route::get('/databases', [DatabaseController::class, 'index'])->name('databases');
         Route::get('/files', [FileController::class, 'index'])->name('files');
+        Route::get('/sftp', [SftpController::class, 'index'])->name('sftp');
 
         Route::get('/ssl', function () {
             $sslCertificates = SslCertificate::where('user_id', auth()->id())->latest()->get();
