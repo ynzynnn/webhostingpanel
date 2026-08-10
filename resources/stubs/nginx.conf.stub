@@ -24,6 +24,12 @@ server {
     gzip on;
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
 
+    # Allow Let's Encrypt ACME Challenge
+    location /.well-known/acme-challenge/ {
+        allow all;
+        root {{DOCUMENT_ROOT}};
+    }
+
     location / {
         try_files $uri $uri/ /index.php?$query_string;
     }

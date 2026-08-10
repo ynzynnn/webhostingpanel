@@ -32,9 +32,15 @@ class SslService
 
             if (! str_contains($output, 'Congratulations') && ! str_contains($output, 'Certificate not yet due for renewal')) {
                 Log::error("Certbot issuing failed for {$domain}: {$output}");
+                
+                $userFriendlyMsg = "Gagal menerbitkan SSL untuk {$domain}. Pastikan A-Record DNS domain sudah ter-pointing ke IP server ini dan tidak terhalang Proxy Cloudflare/Firewall.";
+                if (str_contains($output, 'failed to authenticate') || str_contains($output, 'authenticator: webroot')) {
+                    $userFriendlyMsg = "Let's Encrypt gagal melakukan verifikasi DNS domain {$domain}. Hal ini terjadi jika A-Record DNS belum mengarah ke IP VPS ini atau masih dalam proses propagasi DNS (1-15 menit).";
+                }
+
                 return [
                     'success' => false,
-                    'message' => "Certbot gagal menerbitkan sertifikat SSL. Error log: " . substr($output, 0, 200),
+                    'message' => $userFriendlyMsg,
                 ];
             }
 
