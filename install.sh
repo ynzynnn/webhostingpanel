@@ -179,7 +179,15 @@ systemctl reload nginx
 # ------------------------------------------------------------------------------
 # Step 6: Security Sudoers & Firewall (UFW)
 # ------------------------------------------------------------------------------
-echo "[6/7] Configuring Sudoers security rules & LetsEncrypt Permissions..."
+echo "[6/7] Configuring Systemd Services, Sudoers security rules & LetsEncrypt Permissions..."
+mkdir -p /etc/systemd/system/php8.3-fpm.service.d
+cat << 'EOF' > /etc/systemd/system/php8.3-fpm.service.d/override.conf
+[Service]
+ProtectSystem=false
+ReadWritePaths=/etc/nginx /etc/php /etc/letsencrypt /var/log/letsencrypt /var/lib/letsencrypt /var/www/vhosts
+EOF
+systemctl daemon-reload 2>/dev/null || true
+
 chgrp -R www-data /etc/letsencrypt/live /etc/letsencrypt/archive 2>/dev/null || true
 chmod -R 755 /etc/letsencrypt/live /etc/letsencrypt/archive 2>/dev/null || true
 chmod 644 /etc/letsencrypt/archive/*/*.pem 2>/dev/null || true

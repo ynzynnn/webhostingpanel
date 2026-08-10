@@ -33,7 +33,15 @@ if ! command -v composer &> /dev/null; then
     mv composer.phar /usr/local/bin/composer
 fi
 
-echo "=== [5/5] Configuring Sudo Rules & LetsEncrypt Permissions ==="
+echo "=== [5/5] Configuring Systemd Services & LetsEncrypt Permissions ==="
+mkdir -p /etc/systemd/system/php8.3-fpm.service.d
+cat << 'EOF' > /etc/systemd/system/php8.3-fpm.service.d/override.conf
+[Service]
+ProtectSystem=false
+ReadWritePaths=/etc/nginx /etc/php /etc/letsencrypt /var/log/letsencrypt /var/lib/letsencrypt /var/www/vhosts
+EOF
+systemctl daemon-reload 2>/dev/null || true
+
 chgrp -R www-data /etc/letsencrypt/live /etc/letsencrypt/archive 2>/dev/null || true
 chmod -R 755 /etc/letsencrypt/live /etc/letsencrypt/archive 2>/dev/null || true
 chmod 644 /etc/letsencrypt/archive/*/*.pem 2>/dev/null || true
