@@ -193,11 +193,15 @@ class WebsiteProvisioningService
 
             AuditLogger::log('website_created', "Website {$domainName} berhasil diprovisi dengan Linux user {$systemUser}.", $user->id);
 
-            // Step 8: Auto SSL Issuing if requested
+            // Step 8: Auto SSL Issuing if requested (Non-blocking)
             $sslMessage = null;
             if ($enableAutoSsl) {
-                $sslResult = $this->sslService->issueCertificate($website);
-                $sslMessage = $sslResult['message'];
+                try {
+                    $sslResult = $this->sslService->issueCertificate($website);
+                    $sslMessage = $sslResult['message'] ?? null;
+                } catch (\Throwable $sslEx) {
+                    $sslMessage = "Auto SSL ditunda: DNS domain belum terpointing ke IP VPS. Anda dapat mengeklik tombol 1-Click SSL setelah DNS di-pointing.";
+                }
             }
 
             return [

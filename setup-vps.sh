@@ -33,7 +33,8 @@ if ! command -v composer &> /dev/null; then
     mv composer.phar /usr/local/bin/composer
 fi
 
-echo "=== [5/5] Configuring Sudo Rules & Firewall ==="
+echo "=== [5/5] Configuring Sudo Rules & LetsEncrypt Permissions ==="
+chmod 755 /etc/letsencrypt /etc/letsencrypt/live /etc/letsencrypt/archive 2>/dev/null || true
 echo "www-data ALL=(ALL) NOPASSWD: /usr/sbin/nginx -t, /usr/bin/systemctl reload nginx, /usr/bin/certbot, /bin/cp, /bin/ln, /bin/rm, /usr/bin/cp, /usr/bin/ln, /usr/bin/rm" > /etc/sudoers.d/septapanel
 chmod 0440 /etc/sudoers.d/septapanel
 
