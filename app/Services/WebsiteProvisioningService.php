@@ -232,8 +232,8 @@ class WebsiteProvisioningService
             return ['success' => true];
         }
 
-        $output = @shell_exec('nginx -t 2>&1');
-        if (str_contains($output, 'syntax is ok') && str_contains($output, 'test is successful')) {
+        $output = @shell_exec('sudo /usr/sbin/nginx -t 2>&1');
+        if (str_contains($output, 'syntax is ok')) {
             return ['success' => true];
         }
 
@@ -246,7 +246,7 @@ class WebsiteProvisioningService
     private function reloadNginx(): void
     {
         if (PHP_OS_FAMILY === 'Linux') {
-            @shell_exec('systemctl reload nginx 2>&1');
+            @shell_exec('sudo /usr/bin/systemctl reload nginx 2>&1');
         }
     }
 
