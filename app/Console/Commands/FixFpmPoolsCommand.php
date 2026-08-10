@@ -45,11 +45,13 @@ class FixFpmPoolsCommand extends Command
         $websites = Website::all();
         $validSystemUsers = $websites->pluck('system_user')->toArray();
 
-        // 2. Rewrite each website's FPM pool config
         foreach ($websites as $website) {
             $sysUser = $website->system_user;
             $domain = $website->domain_name;
             $documentRoot = $website->document_root;
+            $logsDir = dirname($documentRoot) . '/logs';
+            $fpmSocket = "/run/php/php8.3-fpm-{$sysUser}.sock";
+
             // Ensure chdir and logs directory exist
             if (! File::isDirectory($documentRoot)) {
                 File::makeDirectory($documentRoot, 0755, true, true);
