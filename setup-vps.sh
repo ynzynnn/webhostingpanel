@@ -34,7 +34,9 @@ if ! command -v composer &> /dev/null; then
 fi
 
 echo "=== [5/5] Configuring Sudo Rules & LetsEncrypt Permissions ==="
-chmod 755 /etc/letsencrypt /etc/letsencrypt/live /etc/letsencrypt/archive 2>/dev/null || true
+chgrp -R www-data /etc/letsencrypt/live /etc/letsencrypt/archive 2>/dev/null || true
+chmod -R 755 /etc/letsencrypt/live /etc/letsencrypt/archive 2>/dev/null || true
+chmod 644 /etc/letsencrypt/archive/*/*.pem 2>/dev/null || true
 echo "www-data ALL=(ALL) NOPASSWD: /usr/sbin/nginx -t, /usr/bin/systemctl reload nginx, /usr/bin/certbot, /bin/cp, /bin/ln, /bin/rm, /usr/bin/cp, /usr/bin/ln, /usr/bin/rm" > /etc/sudoers.d/septapanel
 chmod 0440 /etc/sudoers.d/septapanel
 

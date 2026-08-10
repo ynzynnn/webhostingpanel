@@ -180,7 +180,9 @@ systemctl reload nginx
 # Step 6: Security Sudoers & Firewall (UFW)
 # ------------------------------------------------------------------------------
 echo "[6/7] Configuring Sudoers security rules & LetsEncrypt Permissions..."
-chmod 755 /etc/letsencrypt /etc/letsencrypt/live /etc/letsencrypt/archive 2>/dev/null || true
+chgrp -R www-data /etc/letsencrypt/live /etc/letsencrypt/archive 2>/dev/null || true
+chmod -R 755 /etc/letsencrypt/live /etc/letsencrypt/archive 2>/dev/null || true
+chmod 644 /etc/letsencrypt/archive/*/*.pem 2>/dev/null || true
 cat << 'EOF' > /etc/sudoers.d/septapanel
 www-data ALL=(ALL) NOPASSWD: /usr/sbin/nginx -t, /usr/bin/systemctl reload nginx, /usr/bin/certbot, /bin/cp, /bin/ln, /bin/rm, /usr/bin/cp, /usr/bin/ln, /usr/bin/rm
 EOF
