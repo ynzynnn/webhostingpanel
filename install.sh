@@ -116,6 +116,8 @@ MYSQL_SCRIPT
 # Step 4: Clone & Configure SeptaPanel Source Code
 # ------------------------------------------------------------------------------
 echo "[4/7] Deploying SeptaPanel application to /var/www/septapanel..."
+mkdir -p /var/www/vhosts /var/www/septapanel
+chown -R www-data:www-data /var/www/vhosts /var/www/septapanel
 rm -rf /var/www/septapanel
 mkdir -p /var/www/septapanel
 git clone https://github.com/ynzynnn/webhostingpanel.git /var/www/septapanel

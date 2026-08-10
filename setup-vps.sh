@@ -25,7 +25,9 @@ fi
 apt update
 apt install -y php8.3-fpm php8.3-cli php8.3-mysql php8.3-curl php8.3-mbstring php8.3-xml php8.3-zip php8.3-bcmath php8.3-intl php8.3-gd php8.3-sqlite3
 
-echo "=== [4/5] Installing Composer ==="
+echo "=== [4/5] Setting up VHost Web Directory & Composer ==="
+mkdir -p /var/www/vhosts
+chown -R www-data:www-data /var/www/vhosts /var/www
 if ! command -v composer &> /dev/null; then
     curl -sS https://getcomposer.org/installer | php
     mv composer.phar /usr/local/bin/composer

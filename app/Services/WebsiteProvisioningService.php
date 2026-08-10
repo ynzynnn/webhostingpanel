@@ -45,7 +45,7 @@ class WebsiteProvisioningService
         $sanitizedSlug = Str::slug(str_replace('.', '_', $domainName));
         $systemUser = 'site_' . substr($sanitizedSlug, 0, 14) . '_' . Str::lower(Str::random(4));
 
-        $baseDir = PHP_OS_FAMILY === 'Linux' ? "/home/{$systemUser}" : storage_path("app/vhosts/{$systemUser}");
+        $baseDir = PHP_OS_FAMILY === 'Linux' ? "/var/www/vhosts/{$systemUser}" : storage_path("app/vhosts/{$systemUser}");
         $documentRoot = "{$baseDir}/public_html";
         $logsDir = "{$baseDir}/logs";
 
@@ -104,7 +104,17 @@ class WebsiteProvisioningService
             $createdResources['db_domain_id'] = $domain->id;
 
             // Step 2: Create Linux Directories & Sample Index Page
-            File::makeDirectory($documentRoot, 0755, true, true);
+            if (! File::isDirectory($documentRoot)) {
+                if (! @File::makeDirectory($documentRoot, 0755, true, true)) {
+                    // Fallback to storage path if system folder is not writable
+                    $fallbackBase = storage_path("app/vhosts/{$systemUser}");
+                    $documentRoot = "{$fallbackBase}/public_html";
+                    $logsDir = "{$fallbackBase}/logs";
+                    File::makeDirectory($documentRoot, 0755, true, true);
+                    $baseDir = $fallbackBase;
+                }
+            }
+
             File::makeDirectory($logsDir, 0755, true, true);
             File::makeDirectory(dirname($nginxConfigPath), 0755, true, true);
             File::makeDirectory(dirname($fpmConfigPath), 0755, true, true);
