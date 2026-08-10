@@ -42,8 +42,8 @@ class WebsiteProvisioningService
         }
 
         // 2. Generate System User & Paths
-        $sanitizedSlug = Str::slug(explode('.', $domainName)[0]);
-        $systemUser = 'site_' . substr($sanitizedSlug, 0, 14) . '_' . Str::random(3);
+        $sanitizedSlug = Str::slug(str_replace('.', '_', $domainName));
+        $systemUser = 'site_' . substr($sanitizedSlug, 0, 14) . '_' . Str::lower(Str::random(4));
 
         $baseDir = PHP_OS_FAMILY === 'Linux' ? "/home/{$systemUser}" : storage_path("app/vhosts/{$systemUser}");
         $documentRoot = "{$baseDir}/public_html";
@@ -64,6 +64,12 @@ class WebsiteProvisioningService
         $fpmConfigPath = PHP_OS_FAMILY === 'Linux'
             ? "/etc/php/{$phpVersion}/fpm/pool.d/{$systemUser}.conf"
             : storage_path("app/fpm/{$systemUser}.conf");
+
+        // Determine server_name aliases (primary domain vs subdomain)
+        $domainParts = explode('.', $domainName);
+        $serverNameAlias = count($domainParts) <= 2 && ! str_starts_with($domainName, 'www.')
+            ? "{$domainName} www.{$domainName}"
+            : $domainName;
 
         $createdResources = [
             'db_website_id' => null,
@@ -121,8 +127,8 @@ class WebsiteProvisioningService
             // Step 4: Generate Nginx Config
             $nginxStub = File::get(resource_path('stubs/nginx.conf.stub'));
             $nginxConfig = str_replace(
-                ['{{DOMAIN}}', '{{SYSTEM_USER}}', '{{PHP_VERSION}}', '{{DOCUMENT_ROOT}}', '{{LOGS_DIR}}', '{{FPM_SOCKET}}'],
-                [$domainName, $systemUser, $phpVersion, $documentRoot, $logsDir, $fpmSocket],
+                ['{{DOMAIN}}', '{{SERVER_NAME_ALIAS}}', '{{SYSTEM_USER}}', '{{PHP_VERSION}}', '{{DOCUMENT_ROOT}}', '{{LOGS_DIR}}', '{{FPM_SOCKET}}'],
+                [$domainName, $serverNameAlias, $systemUser, $phpVersion, $documentRoot, $logsDir, $fpmSocket],
                 $nginxStub
             );
             File::put($nginxConfigPath, $nginxConfig);
