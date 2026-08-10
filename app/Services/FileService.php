@@ -236,14 +236,21 @@ class FileService
     }
 
     /**
-     * Fix ownership to www-data or system user on Linux.
+     * Fix ownership to system user & www-data group on Linux with 755 dirs and 644 files.
      */
-    protected function chownToSystemUser(Website $website, string $path): void
+    public function chownToSystemUser(Website $website, string $path): void
     {
         if (PHP_OS_FAMILY === 'Linux') {
             $sysUser = $website->system_user;
-            @shell_exec("sudo /bin/chown -R {$sysUser}:www-data " . escapeshellarg($path) . " 2>&1");
-            @shell_exec("sudo /bin/chmod -R 755 " . escapeshellarg($path) . " 2>&1");
+            $vhostDir = dirname($website->document_root); // /var/www/vhosts/site_xxx
+
+            @shell_exec("sudo /bin/chown -R {$sysUser}:www-data " . escapeshellarg($vhostDir) . " 2>&1");
+            @shell_exec("sudo /usr/bin/find " . escapeshellarg($vhostDir) . " -type d -exec chmod 755 {} + 2>&1");
+            @shell_exec("sudo /usr/bin/find " . escapeshellarg($vhostDir) . " -type f -exec chmod 644 {} + 2>&1");
+            
+            // Restart PHP-FPM pool if socket crashed
+            $phpVer = $website->php_version;
+            @shell_exec("sudo /usr/bin/systemctl reload php{$phpVer}-fpm 2>&1");
         }
     }
 

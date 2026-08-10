@@ -43,6 +43,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/websites/{website}', [WebsiteController::class, 'show'])->name('websites.show');
     Route::post('/websites/{website}/toggle-suspend', [WebsiteController::class, 'toggleSuspend'])->name('websites.toggle-suspend');
     Route::post('/websites/{website}/issue-ssl', [WebsiteController::class, 'issueSsl'])->name('websites.issue-ssl');
+    Route::post('/websites/{website}/fix-permissions', [WebsiteController::class, 'fixPermissions'])->name('websites.fix-permissions');
     Route::delete('/websites/{website}', [WebsiteController::class, 'destroy'])->name('websites.destroy');
 
     // Domain Management Shared Actions

@@ -144,12 +144,21 @@
 
             <!-- File Manager Link Card -->
             <div class="card-box p-5 space-y-3">
-                <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wider font-mono">Akses Berkas</h3>
-                <p class="text-xs text-slate-500">Kelola file di dalam document root website secara aman.</p>
-                <a href="{{ auth()->user()->isAdmin() ? route('admin.files') : route('client.files') }}" class="w-full py-2.5 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs border border-slate-200 transition-all flex items-center justify-center space-x-2">
-                    <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002-2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
-                    <span>Buka File Manager</span>
-                </a>
+                <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wider font-mono">Akses Berkas & Perbaikan 502</h3>
+                <p class="text-xs text-slate-500">Kelola file atau perbaiki izin file (chown/chmod 755/644) jika terjadi 502 Bad Gateway setelah upload ZIP.</p>
+                <div class="space-y-2">
+                    <a href="{{ auth()->user()->isAdmin() ? route('admin.files') : route('client.files') }}" class="w-full py-2.5 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs border border-slate-200 transition-all flex items-center justify-center space-x-2">
+                        <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002-2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                        <span>Buka File Manager</span>
+                    </a>
+
+                    <form method="POST" action="{{ route('websites.fix-permissions', $website) }}">
+                        @csrf
+                        <button type="submit" class="w-full py-2 px-3 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-[11px] border border-amber-200 transition-all flex items-center justify-center space-x-1.5 font-mono">
+                            <span>🛠️ Fix Izin Berkas & Reset 502 Error</span>
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
 

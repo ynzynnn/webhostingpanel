@@ -94,6 +94,18 @@ class WebsiteController extends Controller
         return back()->with('success', "Status website {$website->domain_name} berhasil diubah menjadi {$statusLabel}.");
     }
 
+    public function fixPermissions(Website $website): RedirectResponse
+    {
+        $user = auth()->user();
+        if ($user->isClient() && $website->user_id !== $user->id) {
+            abort(403, 'Akses tidak sah.');
+        }
+
+        app(\App\Services\FileService::class)->chownToSystemUser($website, $website->document_root);
+
+        return back()->with('success', "Izin berkas (Chown & Chmod 755/644) & service PHP-FPM untuk {$website->domain_name} telah diperbaiki! Website siap diakses kembali.");
+    }
+
     public function destroy(Website $website): RedirectResponse
     {
         if (! auth()->user()->isAdmin() && $website->user_id !== auth()->id()) {
