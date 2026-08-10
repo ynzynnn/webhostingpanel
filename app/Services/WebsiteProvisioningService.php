@@ -150,6 +150,11 @@ class WebsiteProvisioningService
 
             // Step 5: Deploy Configs to System /etc/ Directories with Safe Privilege Fallback
             if (PHP_OS_FAMILY === 'Linux') {
+                // Ensure Linux system user exists
+                @shell_exec("id -u " . escapeshellarg($systemUser) . " 2>&1 || sudo /usr/sbin/useradd -r -s /bin/false -g www-data " . escapeshellarg($systemUser) . " 2>&1");
+                @shell_exec("sudo /bin/chown -R www-data:www-data " . escapeshellarg($baseDir) . " 2>&1");
+                @shell_exec("sudo /bin/chmod -R 755 " . escapeshellarg($baseDir) . " 2>&1");
+
                 $etcFpmDir = "/etc/php/{$phpVersion}/fpm/pool.d";
                 $etcNginxAvail = "/etc/nginx/sites-available";
                 $etcNginxEnabled = "/etc/nginx/sites-enabled";
@@ -179,6 +184,9 @@ class WebsiteProvisioningService
                 }
                 $createdResources['files'][] = $nginxAvailTarget;
                 $createdResources['symlinks'][] = $nginxEnabledTarget;
+
+                // Reload PHP-FPM service so pool socket is initialized
+                @shell_exec("sudo /usr/bin/systemctl reload php{$phpVersion}-fpm 2>&1");
             }
 
             // Step 6 & 7: Test Nginx Syntax (`nginx -t`) & Reload
