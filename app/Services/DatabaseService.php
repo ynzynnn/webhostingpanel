@@ -106,4 +106,58 @@ class DatabaseService
             ];
         }
     }
+
+    /**
+     * Export MariaDB database dump (.sql file path).
+     */
+    public function exportDatabase(DatabaseModel $database): ?string
+    {
+        $dbName = $database->name;
+        $exportPath = storage_path("app/dumps/{$dbName}_" . date('Y-m-d_H-i-s') . ".sql");
+        File::makeDirectory(dirname($exportPath), 0755, true, true);
+
+        $dbHost = config('database.connections.mysql.host', '127.0.0.1');
+        $dbUser = config('database.connections.mysql.username', 'root');
+        $dbPass = config('database.connections.mysql.password', '');
+
+        $passArg = $dbPass ? "-p" . escapeshellarg($dbPass) : "";
+        $cmd = "mysqldump -h {$dbHost} -u {$dbUser} {$passArg} " . escapeshellarg($dbName) . " > " . escapeshellarg($exportPath) . " 2>&1";
+
+        shell_exec($cmd);
+
+        if (File::exists($exportPath) && File::size($exportPath) > 0) {
+            AuditLogger::log('database_exported', "Database MariaDB {$dbName} diekspor ke file SQL backup.", $database->user_id);
+            return $exportPath;
+        }
+
+        return null;
+    }
+
+    /**
+     * Import .sql dump file into MariaDB database.
+     */
+    public function importDatabase(DatabaseModel $database, string $filePath): array
+    {
+        $dbName = $database->name;
+        $dbHost = config('database.connections.mysql.host', '127.0.0.1');
+        $dbUser = config('database.connections.mysql.username', 'root');
+        $dbPass = config('database.connections.mysql.password', '');
+
+        $passArg = $dbPass ? "-p" . escapeshellarg($dbPass) : "";
+
+        if (str_ends_with($filePath, '.gz')) {
+            $cmd = "gunzip -c " . escapeshellarg($filePath) . " | mysql -h {$dbHost} -u {$dbUser} {$passArg} " . escapeshellarg($dbName) . " 2>&1";
+        } else {
+            $cmd = "mysql -h {$dbHost} -u {$dbUser} {$passArg} " . escapeshellarg($dbName) . " < " . escapeshellarg($filePath) . " 2>&1";
+        }
+
+        shell_exec($cmd);
+
+        AuditLogger::log('database_imported', "Backup SQL berhasil diimpor ke database MariaDB {$dbName}.", $database->user_id);
+
+        return [
+            'success' => true,
+            'message' => "File SQL dump berhasil diimpor ke database {$dbName}!",
+        ];
+    }
 }

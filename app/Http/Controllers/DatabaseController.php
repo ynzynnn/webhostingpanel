@@ -83,4 +83,44 @@ class DatabaseController extends Controller
             $result['message']
         );
     }
+
+    /**
+     * Export / Download database SQL backup dump.
+     */
+    public function export(DatabaseModel $database)
+    {
+        if (auth()->user()->isClient() && $database->user_id !== auth()->id()) {
+            abort(403, 'Akses tidak sah.');
+        }
+
+        $exportPath = $this->databaseService->exportDatabase($database);
+
+        if ($exportPath && file_exists($exportPath)) {
+            return response()->download($exportPath)->deleteFileAfterSend(true);
+        }
+
+        return redirect()->back()->with('error', 'Gagal mengekspor database SQL backup.');
+    }
+
+    /**
+     * Import .sql file to database.
+     */
+    public function import(Request $request, DatabaseModel $database)
+    {
+        if (auth()->user()->isClient() && $database->user_id !== auth()->id()) {
+            abort(403, 'Akses tidak sah.');
+        }
+
+        $request->validate([
+            'sql_file' => 'required|file|max:51200',
+        ], [
+            'sql_file.required' => 'Pilih file .sql untuk diimpor.',
+            'sql_file.max' => 'Ukuran file SQL maksimal 50MB.',
+        ]);
+
+        $filePath = $request->file('sql_file')->getRealPath();
+        $result = $this->databaseService->importDatabase($database, $filePath);
+
+        return redirect()->back()->with('success', $result['message']);
+    }
 }

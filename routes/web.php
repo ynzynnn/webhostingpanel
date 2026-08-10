@@ -60,6 +60,8 @@ Route::middleware(['auth'])->group(function () {
     // Database Management Shared Actions
     Route::get('/databases', [DatabaseController::class, 'index'])->name('databases.index');
     Route::post('/databases', [DatabaseController::class, 'store'])->name('databases.store');
+    Route::get('/databases/{database}/export', [DatabaseController::class, 'export'])->name('databases.export');
+    Route::post('/databases/{database}/import', [DatabaseController::class, 'import'])->name('databases.import');
     Route::delete('/databases/{database}', [DatabaseController::class, 'destroy'])->name('databases.destroy');
 
     // File Manager Shared Actions
