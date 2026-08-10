@@ -40,12 +40,14 @@ class SftpService
             $vhostDir = dirname($website->document_root);
             @shell_exec("id -u " . escapeshellarg($sysUser) . " 2>&1 || sudo /usr/sbin/useradd -m -d " . escapeshellarg($vhostDir) . " -s /bin/bash -g www-data " . escapeshellarg($sysUser) . " 2>&1");
 
-            // Make sure user shell is valid
+            // Make sure user shell is valid and account is unlocked in /etc/shadow
             @shell_exec("sudo /usr/sbin/usermod -s /bin/bash -g www-data " . escapeshellarg($sysUser) . " 2>&1");
+            @shell_exec("sudo /usr/bin/passwd -u " . escapeshellarg($sysUser) . " 2>&1");
+            @shell_exec("sudo /usr/sbin/usermod -U " . escapeshellarg($sysUser) . " 2>&1");
 
             // 3. Set password via chpasswd
             $cmd = "echo " . escapeshellarg("{$sysUser}:{$newPassword}") . " | sudo /usr/sbin/chpasswd 2>&1";
-            $output = @shell_exec($cmd);
+            @shell_exec($cmd);
 
             // 4. Ensure permissions on home directory for SFTP access
             @shell_exec("sudo /bin/chown -R {$sysUser}:www-data " . escapeshellarg($vhostDir) . " 2>&1");

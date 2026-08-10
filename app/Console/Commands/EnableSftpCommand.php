@@ -37,7 +37,7 @@ class EnableSftpCommand extends Command
         // 1. Configure OpenSSH
         $sftpService->ensureSshdConfig();
 
-        // 2. Ensure all website system users exist with bash shell and www-data group
+        // 2. Ensure all website system users exist with bash shell and www-data group, and unlock them
         $websites = Website::all();
         foreach ($websites as $w) {
             $sysUser = $w->system_user;
@@ -47,12 +47,14 @@ class EnableSftpCommand extends Command
 
             @shell_exec("id -u " . escapeshellarg($sysUser) . " 2>&1 || sudo /usr/sbin/useradd -m -d " . escapeshellarg($vhostDir) . " -s /bin/bash -g www-data " . escapeshellarg($sysUser) . " 2>&1");
             @shell_exec("sudo /usr/sbin/usermod -s /bin/bash -g www-data " . escapeshellarg($sysUser) . " 2>&1");
+            @shell_exec("sudo /usr/bin/passwd -u " . escapeshellarg($sysUser) . " 2>&1");
+            @shell_exec("sudo /usr/sbin/usermod -U " . escapeshellarg($sysUser) . " 2>&1");
             @shell_exec("sudo /bin/chown -R {$sysUser}:www-data " . escapeshellarg($vhostDir) . " 2>&1");
             @shell_exec("sudo /bin/chmod 755 " . escapeshellarg($vhostDir) . " 2>&1");
         }
 
-        // 3. Reload SSH daemon
-        shell_exec("sudo /usr/bin/systemctl reload ssh || sudo /usr/bin/systemctl reload sshd 2>&1");
+        // 3. Restart SSH daemon
+        shell_exec("sudo /usr/bin/systemctl restart ssh || sudo /usr/bin/systemctl restart sshd 2>&1");
 
         $this->info('OpenSSH SFTP Password Authentication has been configured successfully!');
         $this->info('You can now log in via FileZilla / WinSCP using your SFTP username and password.');
