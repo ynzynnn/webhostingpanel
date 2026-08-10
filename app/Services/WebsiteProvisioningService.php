@@ -26,7 +26,7 @@ class WebsiteProvisioningService
         $domainName = preg_replace('/^https?:\/\//', '', $domainName);
         $domainName = rtrim($domainName, '/');
 
-        if (! preg_match('/^[a-[a-z0-9][a-z0-9-]{0,61}[a-z0-9]\.[a-z]{2,}$/i', $domainName) && ! str_contains($domainName, '.local')) {
+        if (! preg_match('/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/i', $domainName) && ! str_contains($domainName, '.local')) {
             return [
                 'success' => false,
                 'message' => 'Format domain tidak valid. Contoh valid: domainclient.com',
