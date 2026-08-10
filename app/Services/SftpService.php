@@ -71,11 +71,11 @@ class SftpService
             $confPath = "/etc/ssh/sshd_config.d/septapanel.conf";
             $sshdContent = "# SeptaPanel OpenSSH SFTP Configuration\nMatch Group www-data\n    PasswordAuthentication yes\n";
 
+            $tmpConf = "/tmp/sftp_sshd.conf";
+            @file_put_contents($tmpConf, $sshdContent);
+
             if (File::isDirectory('/etc/ssh/sshd_config.d')) {
-                $stagedConf = storage_path("app/sftp_sshd.conf");
-                File::makeDirectory(dirname($stagedConf), 0755, true, true);
-                File::put($stagedConf, $sshdContent);
-                @shell_exec("sudo /bin/cp " . escapeshellarg($stagedConf) . " " . escapeshellarg($confPath) . " 2>&1");
+                @shell_exec("sudo /bin/cp " . escapeshellarg($tmpConf) . " " . escapeshellarg($confPath) . " 2>&1");
             }
 
             // Also ensure global PasswordAuthentication yes if disabled
@@ -83,6 +83,7 @@ class SftpService
 
             // Reload SSH service
             @shell_exec("sudo /usr/bin/systemctl reload ssh || sudo /usr/bin/systemctl reload sshd 2>&1");
+            @unlink($tmpConf);
         }
     }
 }
