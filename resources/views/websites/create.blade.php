@@ -25,7 +25,7 @@
             <!-- Domain Name Input -->
             <div class="space-y-1">
                 <label for="domain_name" class="block text-xs font-bold text-slate-700 uppercase tracking-wider font-mono">Nama Domain Website / Subdomain</label>
-                <input type="text" id="domain_name" name="domain_name" x-model="domain" required autofocus :disabled="submitting"
+                <input type="text" id="domain_name" name="domain_name" x-model="domain" required autofocus :readonly="submitting"
                        placeholder="contoh: tokosaya.com atau sub.domain.com"
                        class="w-full px-3.5 py-2.5 rounded-lg bg-white border border-slate-300 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600 transition-all font-mono">
                 <p class="text-[11px] text-slate-400">Masukkan nama domain utama atau subdomain tanpa http:// atau www.</p>
@@ -45,7 +45,7 @@
             <!-- PHP Version Selector -->
             <div class="space-y-1">
                 <label for="php_version" class="block text-xs font-bold text-slate-700 uppercase tracking-wider font-mono">Versi Engine PHP</label>
-                <select id="php_version" name="php_version" required :disabled="submitting"
+                <select id="php_version" name="php_version" required
                         class="w-full px-3.5 py-2.5 rounded-lg bg-white border border-slate-300 text-slate-900 text-sm focus:outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600 transition-all font-mono">
                     <option value="8.3" selected>PHP 8.3 FPM (Rekomendasi & Performa Terbaik)</option>
                     <option value="8.2">PHP 8.2 FPM</option>
@@ -55,7 +55,7 @@
 
             <!-- Auto SSL Checkbox -->
             <div class="p-4 rounded-lg bg-emerald-50/60 border border-emerald-200 flex items-start space-x-3">
-                <input type="checkbox" id="auto_ssl" name="auto_ssl" value="1" x-model="autoSsl" :disabled="submitting" class="mt-0.5 rounded border-slate-300 text-brand-600 focus:ring-brand-500">
+                <input type="checkbox" id="auto_ssl" name="auto_ssl" value="1" x-model="autoSsl" class="mt-0.5 rounded border-slate-300 text-brand-600 focus:ring-brand-500">
                 <div class="text-xs">
                     <label for="auto_ssl" class="font-bold text-emerald-900 cursor-pointer">Aktifkan Auto SSL (Let's Encrypt)</label>
                     <p class="text-emerald-700 text-[11px] mt-0.5">Sistem akan secara otomatis menerbitkan dan memasang sertifikat SSL jika DNS domain sudah terpointing ke IP VPS.</p>
