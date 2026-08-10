@@ -123,32 +123,62 @@ class WebsiteProvisioningService
             File::put("{$documentRoot}/index.html", $indexHtml);
 
             // Step 3: Generate PHP-FPM Pool Config
+            $stagedFpmPath = storage_path("app/fpm/{$systemUser}.conf");
+            File::makeDirectory(dirname($stagedFpmPath), 0755, true, true);
+
             $fpmStub = File::get(resource_path('stubs/fpm.conf.stub'));
             $fpmConfig = str_replace(
                 ['{{SYSTEM_USER}}', '{{DOMAIN}}', '{{DOCUMENT_ROOT}}', '{{LOGS_DIR}}', '{{FPM_SOCKET}}'],
                 [$systemUser, $domainName, $documentRoot, $logsDir, $fpmSocket],
                 $fpmStub
             );
-            File::put($fpmConfigPath, $fpmConfig);
-            $createdResources['files'][] = $fpmConfigPath;
+            File::put($stagedFpmPath, $fpmConfig);
+            $createdResources['files'][] = $stagedFpmPath;
 
             // Step 4: Generate Nginx Config
+            $stagedNginxPath = storage_path("app/nginx/{$domainName}.conf");
+            File::makeDirectory(dirname($stagedNginxPath), 0755, true, true);
+
             $nginxStub = File::get(resource_path('stubs/nginx.conf.stub'));
             $nginxConfig = str_replace(
                 ['{{DOMAIN}}', '{{SERVER_NAME_ALIAS}}', '{{SYSTEM_USER}}', '{{PHP_VERSION}}', '{{DOCUMENT_ROOT}}', '{{LOGS_DIR}}', '{{FPM_SOCKET}}'],
                 [$domainName, $serverNameAlias, $systemUser, $phpVersion, $documentRoot, $logsDir, $fpmSocket],
                 $nginxStub
             );
-            File::put($nginxConfigPath, $nginxConfig);
-            $createdResources['files'][] = $nginxConfigPath;
+            File::put($stagedNginxPath, $nginxConfig);
+            $createdResources['files'][] = $stagedNginxPath;
 
-            // Step 5: Symlink Nginx Config
+            // Step 5: Deploy Configs to System /etc/ Directories with Safe Privilege Fallback
             if (PHP_OS_FAMILY === 'Linux') {
-                @symlink($nginxConfigPath, $nginxEnabledPath);
-                $createdResources['symlinks'][] = $nginxEnabledPath;
-            } else {
-                File::put($nginxEnabledPath, $nginxConfig);
-                $createdResources['files'][] = $nginxEnabledPath;
+                $etcFpmDir = "/etc/php/{$phpVersion}/fpm/pool.d";
+                $etcNginxAvail = "/etc/nginx/sites-available";
+                $etcNginxEnabled = "/etc/nginx/sites-enabled";
+
+                File::makeDirectory($etcFpmDir, 0755, true, true);
+                File::makeDirectory($etcNginxAvail, 0755, true, true);
+                File::makeDirectory($etcNginxEnabled, 0755, true, true);
+
+                $fpmTarget = "{$etcFpmDir}/{$systemUser}.conf";
+                $nginxAvailTarget = "{$etcNginxAvail}/{$domainName}.conf";
+                $nginxEnabledTarget = "{$etcNginxEnabled}/{$domainName}.conf";
+
+                if (is_writable($etcFpmDir)) {
+                    File::put($fpmTarget, $fpmConfig);
+                } else {
+                    @shell_exec("sudo /bin/cp " . escapeshellarg($stagedFpmPath) . " " . escapeshellarg($fpmTarget) . " 2>&1");
+                }
+                $createdResources['files'][] = $fpmTarget;
+
+                if (is_writable($etcNginxAvail)) {
+                    File::put($nginxAvailTarget, $nginxConfig);
+                    @unlink($nginxEnabledTarget);
+                    @symlink($nginxAvailTarget, $nginxEnabledTarget);
+                } else {
+                    @shell_exec("sudo /bin/cp " . escapeshellarg($stagedNginxPath) . " " . escapeshellarg($nginxAvailTarget) . " 2>&1");
+                    @shell_exec("sudo /bin/ln -sf " . escapeshellarg($nginxAvailTarget) . " " . escapeshellarg($nginxEnabledTarget) . " 2>&1");
+                }
+                $createdResources['files'][] = $nginxAvailTarget;
+                $createdResources['symlinks'][] = $nginxEnabledTarget;
             }
 
             // Step 6 & 7: Test Nginx Syntax (`nginx -t`) & Reload

@@ -181,7 +181,7 @@ systemctl reload nginx
 # ------------------------------------------------------------------------------
 echo "[6/7] Configuring Sudoers security rules & Firewall..."
 cat << 'EOF' > /etc/sudoers.d/septapanel
-www-data ALL=(ALL) NOPASSWD: /usr/sbin/nginx -t, /usr/bin/systemctl reload nginx, /usr/bin/certbot
+www-data ALL=(ALL) NOPASSWD: /usr/sbin/nginx -t, /usr/bin/systemctl reload nginx, /usr/bin/certbot, /bin/cp, /bin/ln, /bin/rm, /usr/bin/cp, /usr/bin/ln, /usr/bin/rm
 EOF
 chmod 0440 /etc/sudoers.d/septapanel
 

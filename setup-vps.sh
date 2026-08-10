@@ -34,7 +34,7 @@ if ! command -v composer &> /dev/null; then
 fi
 
 echo "=== [5/5] Configuring Sudo Rules & Firewall ==="
-echo "www-data ALL=(ALL) NOPASSWD: /usr/sbin/nginx -t, /usr/bin/systemctl reload nginx, /usr/bin/certbot" > /etc/sudoers.d/septapanel
+echo "www-data ALL=(ALL) NOPASSWD: /usr/sbin/nginx -t, /usr/bin/systemctl reload nginx, /usr/bin/certbot, /bin/cp, /bin/ln, /bin/rm, /usr/bin/cp, /usr/bin/ln, /usr/bin/rm" > /etc/sudoers.d/septapanel
 chmod 0440 /etc/sudoers.d/septapanel
 
 ufw allow 22/tcp
