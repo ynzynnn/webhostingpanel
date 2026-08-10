@@ -48,9 +48,12 @@ class SslService
             @shell_exec("sudo /bin/chgrp -R www-data /etc/letsencrypt/live /etc/letsencrypt/archive 2>&1");
             @shell_exec("sudo /bin/chmod -R 755 /etc/letsencrypt/live /etc/letsencrypt/archive 2>&1");
             @shell_exec("sudo /bin/chmod 644 /etc/letsencrypt/archive/*/*.pem 2>&1");
+
+            // 3. Auto Reconfigure Nginx VirtualHost with SSL (Port 443 & HTTP->HTTPS Redirect)
+            $this->reconfigureNginxSsl($website);
         }
 
-        // 3. Record or Update SSL Certificate DB
+        // 4. Record or Update SSL Certificate DB
         $ssl = SslCertificate::updateOrCreate(
             ['website_id' => $website->id, 'domain' => $domain],
             [
@@ -61,13 +64,75 @@ class SslService
             ]
         );
 
-        AuditLogger::log('ssl_issued', "Sertifikat SSL Let's Encrypt berhasil diterbitkan untuk {$domain}.", $website->user_id);
+        AuditLogger::log('ssl_issued', "Sertifikat SSL Let's Encrypt berhasil diterbitkan dan Nginx di-rekonfigurasi untuk {$domain}.", $website->user_id);
 
         return [
             'success' => true,
-            'message' => "Sertifikat SSL Let's Encrypt berhasil diterbitkan dan diaktifkan untuk {$domain}!",
+            'message' => "Sertifikat SSL Let's Encrypt berhasil diterbitkan dan Nginx HTTPS berhasil diaktifkan untuk {$domain}!",
             'ssl' => $ssl,
         ];
+    }
+
+    /**
+     * Reconfigure Nginx VirtualHost to enable SSL (Port 443) & HTTP->HTTPS redirect.
+     */
+    public function reconfigureNginxSsl(Website $website): void
+    {
+        $domain = $website->domain_name;
+        $systemUser = $website->system_user;
+        $phpVersion = $website->php_version;
+        $documentRoot = $website->document_root;
+        $logsDir = dirname($documentRoot) . "/logs";
+
+        $fpmSocket = PHP_OS_FAMILY === 'Linux'
+            ? "/run/php/php{$phpVersion}-fpm-{$systemUser}.sock"
+            : storage_path("app/fpm/{$systemUser}.sock");
+
+        $certPath = "/etc/letsencrypt/live/{$domain}/fullchain.pem";
+        $keyPath = "/etc/letsencrypt/live/{$domain}/privkey.pem";
+
+        if (! file_exists($certPath) && PHP_OS_FAMILY !== 'Linux') {
+            $certPath = storage_path("app/ssl/{$domain}.crt");
+            $keyPath = storage_path("app/ssl/{$domain}.key");
+        }
+
+        $domainParts = explode('.', $domain);
+        $serverNameAlias = count($domainParts) <= 2 && ! str_starts_with($domain, 'www.')
+            ? "{$domain} www.{$domain}"
+            : $domain;
+
+        $sslStub = \File::get(resource_path('stubs/nginx-ssl.conf.stub'));
+        $sslNginxConfig = str_replace(
+            ['{{DOMAIN}}', '{{SERVER_NAME_ALIAS}}', '{{SYSTEM_USER}}', '{{PHP_VERSION}}', '{{DOCUMENT_ROOT}}', '{{LOGS_DIR}}', '{{FPM_SOCKET}}', '{{SSL_CERT_PATH}}', '{{SSL_KEY_PATH}}'],
+            [$domain, $serverNameAlias, $systemUser, $phpVersion, $documentRoot, $logsDir, $fpmSocket, $certPath, $keyPath],
+            $sslStub
+        );
+
+        $stagedNginxPath = storage_path("app/nginx/{$domain}.conf");
+        \File::makeDirectory(dirname($stagedNginxPath), 0755, true, true);
+        \File::put($stagedNginxPath, $sslNginxConfig);
+
+        if (PHP_OS_FAMILY === 'Linux') {
+            $etcNginxAvail = "/etc/nginx/sites-available/{$domain}.conf";
+            $etcNginxEnabled = "/etc/nginx/sites-enabled/{$domain}.conf";
+
+            if (is_writable("/etc/nginx/sites-available")) {
+                \File::put($etcNginxAvail, $sslNginxConfig);
+                @unlink($etcNginxEnabled);
+                @symlink($etcNginxAvail, $etcNginxEnabled);
+            } else {
+                @shell_exec("sudo /bin/cp " . escapeshellarg($stagedNginxPath) . " " . escapeshellarg($etcNginxAvail) . " 2>&1");
+                @shell_exec("sudo /bin/ln -sf " . escapeshellarg($etcNginxAvail) . " " . escapeshellarg($etcNginxEnabled) . " 2>&1");
+            }
+
+            // Test syntax & reload Nginx
+            $testCmd = shell_exec("sudo /usr/sbin/nginx -t 2>&1");
+            if (str_contains($testCmd, 'syntax is ok')) {
+                shell_exec("sudo /usr/bin/systemctl reload nginx 2>&1");
+            } else {
+                Log::error("Nginx SSL reconfiguration syntax test failed for {$domain}: {$testCmd}");
+            }
+        }
     }
 
     /**
