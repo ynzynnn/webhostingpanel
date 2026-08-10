@@ -34,9 +34,10 @@ class DatabaseService
         try {
             // 2. Execute MariaDB Queries
             if (config('database.default') === 'mysql' || config('database.default') === 'mariadb') {
+                $escapedPassword = addslashes($password);
                 DB::statement("CREATE DATABASE IF NOT EXISTS `{$dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
-                DB::statement("CREATE USER IF NOT EXISTS '{$dbUsername}'@'localhost' IDENTIFIED BY ?;", [$password]);
-                DB::statement("ALTER USER '{$dbUsername}'@'localhost' IDENTIFIED BY ?;", [$password]);
+                DB::statement("CREATE USER IF NOT EXISTS '{$dbUsername}'@'localhost' IDENTIFIED BY '{$escapedPassword}';");
+                DB::statement("ALTER USER '{$dbUsername}'@'localhost' IDENTIFIED BY '{$escapedPassword}';");
                 DB::statement("GRANT ALL PRIVILEGES ON `{$dbName}`.* TO '{$dbUsername}'@'localhost';");
                 DB::statement("FLUSH PRIVILEGES;");
             }
