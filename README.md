@@ -1,15 +1,31 @@
 # SeptaPanel — Custom Lightweight VPS Hosting Control Panel
 
-**SeptaPanel** adalah custom web hosting control panel berbasis Laravel 11, Blade, Tailwind CSS, dan Alpine.js yang dioptimalkan untuk VPS spesifikasi ringan (1 vCPU, 1 GB RAM, SSD/NVMe, Ubuntu 22.04/24.04 atau Debian 11/12).
+**SeptaPanel** adalah custom web hosting control panel berbasis Laravel 11, Blade, Tailwind CSS, dan Alpine.js yang dioptimalkan untuk VPS spesifikasi ringan (1 vCPU, 1 GB RAM, SSD/NVMe, Ubuntu 22.04/24.04 atau Debian 10/11/12).
 
 Repository: [https://github.com/ynzynnn/webhostingpanel](https://github.com/ynzynnn/webhostingpanel)
+
+---
+
+## ⚡ Pterodactyl-Style 1-Click Interactive Auto-Installer
+
+Sama seperti installer Pterodactyl Panel (`install.sh`), Anda dapat mengonfigurasi dan menginstal seluruh SeptaPanel secara interaktif hanya dengan mengopi perintah berikut di VPS baru Anda:
+
+```bash
+bash <(curl -sSL https://raw.githubusercontent.com/ynzynnn/webhostingpanel/main/install.sh)
+```
+
+### 📋 Wizard Interaktif Akan Menanyakan:
+1. **Domain Panel / FQDN** (misal: `panel.domainanda.com` atau IP VPS)
+2. **Password Database MariaDB** (otomatis digenerate acak jika dikosongkan)
+3. **Email & Password Admin**
+4. **Opsi Auto SSL Let's Encrypt**
 
 ---
 
 ## ✨ Fitur Utama
 
 - **Security Isolation & Zero Full Sudo Rule**: Proses Laravel tidak diberi akses `sudo` bebas. Eksekusi privilege (Nginx reload, Certbot, FPM pool) dikontrol secara ketat.
-- **Clean Minimalist Dashboard UI**: Desain card-box modern yang bersih, responsif, dan mudah digunakan.
+- **Clean Minimalist Dashboard UI**: Desain card-box modern yang bersih, responsif, dan mudah digunakan (inspirasi `mantappubotdashboard`).
 - **Website Provisioning Engine**:
   - Pembuatan Linux System User khusus per website.
   - Document root terisolasi (`/home/username/public_html`) & log directory (`/home/username/logs`).
@@ -22,19 +38,7 @@ Repository: [https://github.com/ynzynnn/webhostingpanel](https://github.com/ynzy
 
 ---
 
-## ⚡ Instalasi Cepat di VPS (Ubuntu / Debian)
-
-Jalankan perintah 1-baris berikut pada VPS Anda sebagai `root`:
-
-```bash
-curl -sSL https://raw.githubusercontent.com/ynzynnn/webhostingpanel/main/setup-vps.sh | bash
-```
-
-Atau ikuti panduan lengkap di [SERVER_SETUP_GUIDE.md](SERVER_SETUP_GUIDE.md).
-
----
-
-## 🔑 Akun Default Seeder
+## 🔑 Akun Default (jika tidak diubah di installer)
 
 - **Admin**: `admin@septapanel.local` / `password123`
 - **Client**: `client@septapanel.local` / `password123`
