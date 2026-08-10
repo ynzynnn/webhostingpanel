@@ -101,36 +101,16 @@ class WebsiteController extends Controller
             abort(403, 'Akses tidak sah.');
         }
 
-        $sysUser = $website->system_user;
-        $phpVer = $website->php_version;
+        \Artisan::call('fpm:fix');
+
         $baseDir = dirname($website->document_root);
-
         if (PHP_OS_FAMILY === 'Linux') {
-            // 1. Ensure Linux user exists
-            @shell_exec("id -u " . escapeshellarg($sysUser) . " 2>&1 || sudo /usr/sbin/useradd -r -s /bin/false -g www-data " . escapeshellarg($sysUser) . " 2>&1");
-
-            // 2. Fix FPM Pool config user = www-data
-            $etcFpmConf = "/etc/php/{$phpVer}/fpm/pool.d/{$sysUser}.conf";
-            if (\File::exists($etcFpmConf)) {
-                $fpmContent = \File::get($etcFpmConf);
-                $fpmContent = preg_replace('/user\s*=\s*.*/', 'user = www-data', $fpmContent);
-                $fpmContent = preg_replace('/group\s*=\s*.*/', 'group = www-data', $fpmContent);
-                $stagedFpm = storage_path("app/fpm/{$sysUser}.conf");
-                \File::put($stagedFpm, $fpmContent);
-                @shell_exec("sudo /bin/cp " . escapeshellarg($stagedFpm) . " " . escapeshellarg($etcFpmConf) . " 2>&1");
-            }
-
-            // 3. Fix Ownership & Permissions
             @shell_exec("sudo /bin/chown -R www-data:www-data " . escapeshellarg($baseDir) . " 2>&1");
             @shell_exec("sudo /usr/bin/find " . escapeshellarg($baseDir) . " -type d -exec chmod 755 {} + 2>&1");
             @shell_exec("sudo /usr/bin/find " . escapeshellarg($baseDir) . " -type f -exec chmod 644 {} + 2>&1");
-
-            // 4. Restart Services
-            @shell_exec("sudo /usr/bin/systemctl restart php{$phpVer}-fpm 2>&1");
-            @shell_exec("sudo /usr/bin/systemctl reload nginx 2>&1");
         }
 
-        return back()->with('success', "Service PHP-FPM {$phpVer} & Izin Berkas untuk {$website->domain_name} telah berhasil diperbaiki 100%! Website siap diakses kembali.");
+        return back()->with('success', "Service PHP-FPM & Izin Berkas untuk {$website->domain_name} telah berhasil diperbaiki 100%! Website siap diakses kembali.");
     }
 
     public function destroy(Website $website): RedirectResponse
