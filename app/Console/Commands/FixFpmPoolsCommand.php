@@ -50,8 +50,13 @@ class FixFpmPoolsCommand extends Command
             $sysUser = $website->system_user;
             $domain = $website->domain_name;
             $documentRoot = $website->document_root;
-            $logsDir = dirname($documentRoot) . '/logs';
-            $fpmSocket = "/run/php/php8.3-fpm-{$sysUser}.sock";
+            // Ensure chdir and logs directory exist
+            if (! File::isDirectory($documentRoot)) {
+                File::makeDirectory($documentRoot, 0755, true, true);
+            }
+            if (! File::isDirectory($logsDir)) {
+                File::makeDirectory($logsDir, 0755, true, true);
+            }
 
             $confContent = <<<INI
 ; SeptaPanel PHP-FPM Pool Configuration
@@ -103,6 +108,15 @@ INI;
             if (! in_array($sysUserFromFilename, $validSystemUsers)) {
                 $this->warn("Removing orphaned pool file: {$filename}");
                 @shell_exec("sudo /bin/rm -f " . escapeshellarg($file->getPathname()) . " 2>&1");
+            } else {
+                $content = File::get($file->getPathname());
+                if (preg_match('/chdir\s*=\s*(.*)/', $content, $matches)) {
+                    $chdirPath = trim($matches[1]);
+                    if (! File::isDirectory($chdirPath)) {
+                        $this->warn("Creating missing chdir directory for {$filename}: {$chdirPath}");
+                        File::makeDirectory($chdirPath, 0755, true, true);
+                    }
+                }
             }
         }
 
