@@ -27,6 +27,12 @@ return new class extends Migration
             if (! Schema::hasColumn('databases', 'port')) {
                 $table->integer('port')->default(3306)->after('host');
             }
+            if (Schema::hasColumn('databases', 'db_name')) {
+                $table->string('db_name')->nullable()->change();
+            }
+            if (Schema::hasColumn('databases', 'db_user')) {
+                $table->string('db_user')->nullable()->change();
+            }
         });
     }
 

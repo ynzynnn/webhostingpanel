@@ -47,7 +47,9 @@ class DatabaseService
                 'user_id' => $user->id,
                 'website_id' => $websiteId,
                 'name' => $dbName,
+                'db_name' => $dbName,
                 'username' => $dbUsername,
+                'db_user' => $dbUsername,
                 'host' => '127.0.0.1',
                 'port' => 3306,
             ]);
