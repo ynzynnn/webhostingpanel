@@ -138,13 +138,15 @@ class FileController extends Controller
         $request->validate([
             'website_id' => 'required|exists:websites,id',
             'filepath' => 'required|string',
-            'content' => 'required|string',
+            'content' => 'nullable|string',
         ]);
 
         $website = Website::findOrFail($request->website_id);
         $this->authorizeWebsiteAccess($website);
 
-        $success = $this->fileService->saveFileContent($website, $request->filepath, $request->content);
+        $content = $request->input('content', '');
+
+        $success = $this->fileService->saveFileContent($website, $request->filepath, $content);
 
         return response()->json([
             'success' => $success,

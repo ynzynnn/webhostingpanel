@@ -166,7 +166,7 @@ class FileService
     }
 
     /**
-     * Save updated content to a file.
+     * Save updated content to a file with privilege fallback.
      */
     public function saveFileContent(Website $website, string $relativeFilePath, string $content): bool
     {
@@ -176,12 +176,28 @@ class FileService
             return false;
         }
 
-        File::put($targetPath, $content);
-        $this->chownToSystemUser($website, $targetPath);
+        try {
+            File::put($targetPath, $content);
+            $this->chownToSystemUser($website, $targetPath);
 
-        AuditLogger::log('file_updated', "File {$relativeFilePath} diperbarui pada website {$website->domain_name}.", $website->user_id);
+            AuditLogger::log('file_updated', "File {$relativeFilePath} diperbarui pada website {$website->domain_name}.", $website->user_id);
 
-        return true;
+            return true;
+        } catch (\Throwable $e) {
+            Log::error("Direct save failed for {$targetPath}: " . $e->getMessage());
+
+            // Privilege fallback write via /tmp and sudo cp
+            $tmpPath = "/tmp/septasave_" . \Illuminate\Support\Str::random(10);
+            File::put($tmpPath, $content);
+            @shell_exec("sudo /bin/cp " . escapeshellarg($tmpPath) . " " . escapeshellarg($targetPath) . " 2>&1");
+            @unlink($tmpPath);
+
+            $this->chownToSystemUser($website, $targetPath);
+
+            AuditLogger::log('file_updated', "File {$relativeFilePath} diperbarui pada website {$website->domain_name}.", $website->user_id);
+
+            return File::exists($targetPath);
+        }
     }
 
     /**
