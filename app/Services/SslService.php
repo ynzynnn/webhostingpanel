@@ -27,7 +27,7 @@ class SslService
 
         // 2. Execute Certbot / Privilege Service issuing command
         if (PHP_OS_FAMILY === 'Linux' && file_exists('/usr/bin/certbot')) {
-            $cmd = "certbot certonly --webroot -w " . escapeshellarg($website->document_root) . " -d " . escapeshellarg($domain) . " --non-interactive --agree-tos --register-unsafely-without-email 2>&1";
+            $cmd = "sudo /usr/bin/certbot certonly --webroot -w " . escapeshellarg($website->document_root) . " -d " . escapeshellarg($domain) . " --non-interactive --agree-tos --register-unsafely-without-email 2>&1";
             $output = @shell_exec($cmd);
 
             if (! str_contains($output, 'Congratulations') && ! str_contains($output, 'Certificate not yet due for renewal')) {
@@ -37,6 +37,11 @@ class SslService
                     'message' => "Certbot gagal menerbitkan sertifikat SSL. Error log: " . substr($output, 0, 200),
                 ];
             }
+
+            // Ensure Nginx read permissions on newly issued cert files
+            @shell_exec("sudo /bin/chgrp -R www-data /etc/letsencrypt/live /etc/letsencrypt/archive 2>&1");
+            @shell_exec("sudo /bin/chmod -R 755 /etc/letsencrypt/live /etc/letsencrypt/archive 2>&1");
+            @shell_exec("sudo /bin/chmod 644 /etc/letsencrypt/archive/*/*.pem 2>&1");
         }
 
         // 3. Record or Update SSL Certificate DB
