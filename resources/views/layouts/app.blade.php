@@ -124,7 +124,7 @@
                     </a>
 
                     <!-- Domains -->
-                    <a href="{{ route('client.domains') }}" 
+                    <a href="{{ $isAdmin ? route('admin.domains') : route('client.domains') }}" 
                        class="flex items-center space-x-3 px-3.5 py-2.5 rounded-lg font-semibold transition-all {{ str_contains($currentRoute, 'domains') ? 'bg-brand-50 text-brand-600 border border-brand-100' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
                         <svg class="w-4 h-4 {{ str_contains($currentRoute, 'domains') ? 'text-brand-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
                         <span>Domains</span>
