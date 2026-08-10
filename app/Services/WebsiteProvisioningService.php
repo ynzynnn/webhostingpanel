@@ -272,7 +272,7 @@ class WebsiteProvisioningService
         $nginxConfigPath = PHP_OS_FAMILY === 'Linux' ? "/etc/nginx/sites-available/{$domainName}.conf" : storage_path("app/nginx/{$domainName}.conf");
         $nginxEnabledPath = PHP_OS_FAMILY === 'Linux' ? "/etc/nginx/sites-enabled/{$domainName}.conf" : storage_path("app/nginx/enabled_{$domainName}.conf");
         $fpmConfigPath = PHP_OS_FAMILY === 'Linux' ? "/etc/php/{$website->php_version}/fpm/pool.d/{$systemUser}.conf" : storage_path("app/fpm/{$systemUser}.conf");
-        $baseDir = PHP_OS_FAMILY === 'Linux' ? "/home/{$systemUser}" : storage_path("app/vhosts/{$systemUser}");
+        $baseDir = PHP_OS_FAMILY === 'Linux' ? "/var/www/vhosts/{$systemUser}" : storage_path("app/vhosts/{$systemUser}");
 
         if (file_exists($nginxEnabledPath) || is_link($nginxEnabledPath)) {
             @unlink($nginxEnabledPath);

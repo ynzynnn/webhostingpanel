@@ -36,8 +36,8 @@
                 <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Preview Konfigurasi Otomatis:</div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-700">
                     <div>Linux User: <span class="font-bold text-brand-600" x-text="'site_' + domain.split('.')[0].substring(0,10)"></span></div>
-                    <div>Document Root: <span class="font-bold text-slate-900" x-text="'/home/site_' + domain.split('.')[0].substring(0,10) + '/public_html'"></span></div>
-                    <div>Logs Dir: <span class="font-bold text-slate-900" x-text="'/home/site_' + domain.split('.')[0].substring(0,10) + '/logs'"></span></div>
+                    <div>Document Root: <span class="font-bold text-slate-900" x-text="'/var/www/vhosts/site_' + domain.split('.')[0].substring(0,10) + '/public_html'"></span></div>
+                    <div>Logs Dir: <span class="font-bold text-slate-900" x-text="'/var/www/vhosts/site_' + domain.split('.')[0].substring(0,10) + '/logs'"></span></div>
                     <div>Nginx Config: <span class="font-bold text-slate-900" x-text="'/etc/nginx/sites-available/' + domain + '.conf'"></span></div>
                 </div>
             </div>
