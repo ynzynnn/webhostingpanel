@@ -195,6 +195,15 @@
                         <span x-show="!sidebarCollapsed" class="truncate" x-cloak>SSL Certificates</span>
                     </a>
 
+                    <!-- API Keys -->
+                    <a href="{{ $isAdmin ? route('admin.api-keys') : route('client.api-keys') }}" 
+                       :title="sidebarCollapsed ? 'API Keys' : ''"
+                       class="flex items-center space-x-3 px-3 py-2.5 rounded-lg font-semibold transition-all {{ str_contains($currentRoute, 'api-keys') ? 'bg-brand-50 text-brand-600 border border-brand-100' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}"
+                       :class="sidebarCollapsed ? 'justify-center px-2' : ''">
+                        <svg class="w-4 h-4 shrink-0 {{ str_contains($currentRoute, 'api-keys') ? 'text-brand-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                        <span x-show="!sidebarCollapsed" class="truncate" x-cloak>API Keys</span>
+                    </a>
+
                     @if($isAdmin)
                         <div class="pt-4 pb-2" x-show="!sidebarCollapsed" x-cloak>
                             <span class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">Administrator</span>

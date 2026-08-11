@@ -2,6 +2,12 @@
 
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\ApiKeyController;
+use App\Http\Controllers\Api\v1\ClientApiController;
+use App\Http\Controllers\Api\v1\DatabaseApiController;
+use App\Http\Controllers\Api\v1\DomainApiController;
+use App\Http\Controllers\Api\v1\SystemApiController;
+use App\Http\Controllers\Api\v1\WebsiteApiController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientDashboardController;
 use App\Http\Controllers\DatabaseController;
@@ -10,6 +16,7 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\SftpController;
 use App\Http\Controllers\WebsiteController;
 use App\Http\Middleware\EnsureRole;
+use App\Http\Middleware\VerifyApiKey;
 use App\Models\AuditLog;
 use App\Models\DatabaseModel;
 use App\Models\Domain;
@@ -24,7 +31,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 });
 
-// Authenticated Routes
+// Authenticated Web Panel Routes
 Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
@@ -37,6 +44,11 @@ Route::middleware(['auth'])->group(function () {
     // Account Management
     Route::get('/account', [AccountController::class, 'index'])->name('account.index');
     Route::post('/account/password', [AccountController::class, 'updatePassword'])->name('account.password');
+
+    // API Key Management Web Actions
+    Route::get('/api-keys', [ApiKeyController::class, 'index'])->name('api-keys.index');
+    Route::post('/api-keys', [ApiKeyController::class, 'store'])->name('api-keys.store');
+    Route::delete('/api-keys/{apiKey}', [ApiKeyController::class, 'destroy'])->name('api-keys.destroy');
 
     // Website Shared Actions
     Route::get('/websites/create', [WebsiteController::class, 'create'])->name('websites.create');
@@ -82,6 +94,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/databases', [DatabaseController::class, 'index'])->name('databases');
         Route::get('/files', [FileController::class, 'index'])->name('files');
         Route::get('/sftp', [SftpController::class, 'index'])->name('sftp');
+        Route::get('/api-keys', [ApiKeyController::class, 'index'])->name('api-keys');
 
         Route::get('/ssl', function () {
             $sslCertificates = SslCertificate::with(['website', 'user'])->latest()->get();
@@ -109,10 +122,40 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/databases', [DatabaseController::class, 'index'])->name('databases');
         Route::get('/files', [FileController::class, 'index'])->name('files');
         Route::get('/sftp', [SftpController::class, 'index'])->name('sftp');
+        Route::get('/api-keys', [ApiKeyController::class, 'index'])->name('api-keys');
 
         Route::get('/ssl', function () {
             $sslCertificates = SslCertificate::where('user_id', auth()->id())->latest()->get();
             return view('ssl.index', compact('sslCertificates'));
         })->name('ssl');
     });
+});
+
+// RESTful API v1 Routes Group (Protected by VerifyApiKey middleware)
+Route::middleware([VerifyApiKey::class])->prefix('api/v1')->name('api.v1.')->group(function () {
+    // Website Management API
+    Route::get('/websites', [WebsiteApiController::class, 'index'])->name('websites.index');
+    Route::post('/websites', [WebsiteApiController::class, 'store'])->name('websites.store');
+    Route::get('/websites/{website}', [WebsiteApiController::class, 'show'])->name('websites.show');
+    Route::post('/websites/{website}/suspend', [WebsiteApiController::class, 'toggleSuspend'])->name('websites.suspend');
+    Route::post('/websites/{website}/issue-ssl', [WebsiteApiController::class, 'issueSsl'])->name('websites.issue-ssl');
+    Route::delete('/websites/{website}', [WebsiteApiController::class, 'destroy'])->name('websites.destroy');
+
+    // Client Management API
+    Route::get('/clients', [ClientApiController::class, 'index'])->name('clients.index');
+    Route::post('/clients', [ClientApiController::class, 'store'])->name('clients.store');
+    Route::put('/clients/{user}/quota', [ClientApiController::class, 'updateQuota'])->name('clients.quota');
+
+    // Database Management API
+    Route::get('/databases', [DatabaseApiController::class, 'index'])->name('databases.index');
+    Route::post('/databases', [DatabaseApiController::class, 'store'])->name('databases.store');
+    Route::delete('/databases/{database}', [DatabaseApiController::class, 'destroy'])->name('databases.destroy');
+
+    // Domain Management API
+    Route::get('/domains', [DomainApiController::class, 'index'])->name('domains.index');
+    Route::post('/domains', [DomainApiController::class, 'store'])->name('domains.store');
+    Route::delete('/domains/{domain}', [DomainApiController::class, 'destroy'])->name('domains.destroy');
+
+    // System Monitoring API
+    Route::get('/system/status', [SystemApiController::class, 'status'])->name('system.status');
 });
